@@ -43,8 +43,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void onClick() {
         progBar.setVisibility(View.VISIBLE);
-        text = String.valueOf(petid.getText());
-        id = Integer.valueOf(text);
+        id = Integer.parseInt(petid.getText().toString());
         PetAPI petAPI = PetAPI.retrofit.create(PetAPI.class);
         Call<PetInfo> call = petAPI.getPet(id);
 
