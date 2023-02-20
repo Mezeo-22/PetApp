@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -24,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
     private Boolean isSuccess;
     private Integer id;
     private TextView errorLog;
+    private Button btnSearch;
+    private String text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,14 +36,17 @@ public class MainActivity extends AppCompatActivity {
         petid = (EditText) findViewById(R.id.searchId);
         errorLog = (TextView)findViewById(R.id.errorLog);
         progBar = (ProgressBar) findViewById(R.id.progressBar);
+        btnSearch = (Button)findViewById(R.id.searchButton);
         isSuccess = false;
         progBar.setVisibility(View.INVISIBLE);
+        btnSearch.setOnClickListener(v -> onClick());
     }
-
     public void onClick() {
         progBar.setVisibility(View.VISIBLE);
+        text = String.valueOf(petid.getText());
+        id = Integer.valueOf(text);
         PetAPI petAPI = PetAPI.retrofit.create(PetAPI.class);
-        Call<PetInfo> call = petAPI.getPet();
+        Call<PetInfo> call = petAPI.getPet(id);
 
         call.enqueue(new Callback<PetInfo>() {
             @Override
@@ -52,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
                     id = pet.getId();
                 } else {
                     ResponseBody errorBody = response.errorBody();
+                    isSuccess = false;
                     try {
                         Toast.makeText(MainActivity.this, errorBody.string(),
                                 Toast.LENGTH_SHORT).show();
@@ -65,13 +72,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<PetInfo> call, Throwable t) {
                 errorLog.setText("Что-то пошло не так!");
+                isSuccess = false;
                 progBar.setVisibility(View.INVISIBLE);
             }
         });
 
         if (isSuccess) {
             Intent intent = new Intent(this, PetInfoActivity.class);
-            intent.putExtra("id", id.intValue());
+            intent.putExtra("petid", petid.getText().toString());
             startActivity(intent);
         }
     }
